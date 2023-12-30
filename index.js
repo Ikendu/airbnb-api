@@ -9,7 +9,7 @@ const jwt = require(`jsonwebtoken`)
 const app = express()
 
 app.use(express.json())
-app.use(cors({ origin: `http://localhost:5173`, Credential: true }))
+app.use(cors({ origin: `http://localhost:5173`, credentials: true }))
 
 const bcryptSalt = bcrypt.genSaltSync(10)
 const jwtSecret = `kjhsj59479fjhfdkjjfhdkj29skkfjfjzfhuisrwe`
@@ -28,13 +28,15 @@ app.post(`/login`, async (req, res) => {
   if (userDoc) {
     const passOk = bcrypt.compareSync(password, userDoc.password)
     if (passOk) {
-      jwt.sign({ email: userDoc.email, id: userDoc._id }, jwtSecret, {}, (err, token) => {})
-      res.json(`ok`)
+      jwt.sign({ email: userDoc.email, id: userDoc._id }, jwtSecret, {}, (err, token) => {
+        if (err) throw err
+        res.cookie(`token`, token).json(userDoc)
+      })
     } else {
-      res.json(`pass not ok`)
+      res.status(422).json(`pass not ok`)
     }
   } else {
-    res.json(`not ok`)
+    res.tjson(`user not found`)
   }
 })
 
